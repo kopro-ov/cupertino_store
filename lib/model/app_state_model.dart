@@ -42,4 +42,26 @@ class AppStateModel extends foundation.ChangeNotifier {
     _selectedCategory = newCategory;
     notifyListeners();
   }
+
+  // Returns a copy of the list of available products, filtered by category.
+  List<Product> getProducts() {
+    if (_selectedCategory == Category.all) {
+      return List.from(_availableProducts);
+    } else {
+      return _availableProducts.where((p) {
+        return p.category == _selectedCategory;
+      }).toList();
+    }
+  }
+
+  // Adds a product to the cart.
+  void addProductToCart(int productId) {
+    if (!_productsInCart.containsKey(productId)) {
+      _productsInCart[productId] = 1;
+    } else {
+      _productsInCart[productId] = _productsInCart[productId]! + 1;
+    }
+
+    notifyListeners();
+  }
 }
