@@ -33,6 +33,32 @@ class AppStateModel extends foundation.ChangeNotifier {
     return _selectedCategory;
   }
 
+  double get subtotalCost {
+    return _productsInCart.keys.map((id) {
+      // Extended price for product line
+      return getProductById(id).price * _productsInCart[id]!;
+    }).fold(0, (accumulator, extendedPrice) {
+      return accumulator + extendedPrice;
+    });
+  }
+
+  double get shippingCost {
+    return _shippingCostPerItem *
+        _productsInCart.values.fold(0.0, (accumulator, itemCount) {
+          return accumulator + itemCount;
+        });
+  }
+
+  // Sales tax for the items in the cart
+  double get tax {
+    return subtotalCost * _salesTaxRate;
+  }
+
+  // Total cost to order everything in the cart.
+  double get totalCost {
+    return subtotalCost + shippingCost + tax;
+  }
+
   void loadProducts() {
     _availableProducts = ProductsRepository.loadProducts(Category.all);
     notifyListeners();
@@ -70,5 +96,16 @@ class AppStateModel extends foundation.ChangeNotifier {
     return getProducts().where((product) {
       return product.name.toLowerCase().contains(searchTerms.toLowerCase());
     }).toList();
+  }
+
+// Returns the Product instance matching the provided id.
+  Product getProductById(int id) {
+    return _availableProducts.firstWhere((p) => p.id == id);
+  }
+
+  // Removes everything from the cart.
+  void clearCart() {
+    _productsInCart.clear();
+    notifyListeners();
   }
 }
